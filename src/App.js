@@ -1,157 +1,78 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Movie from "./components/Movie";
+import { FaSortAmountDownAlt } from "react-icons/fa";
+import debounce from "lodash/debounce";
 import "./App.css";
-import { Movie, SearchResult } from "./components/index";
-import { trendingMovies, GetUrl, SortResults } from "./constants";
-import {
-  FaSortAmountDownAlt,
-  FaSortAmountUpAlt,
-  FaSearch,
-} from "react-icons/fa";
+const { REACT_APP_API_URL, REACT_APP_API_KEY } = process.env;
+
 function App() {
-  const [movies, setMovies] = useState("");
-  const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState("");
-  const [trendingAsc, setTrendingAsc] = useState("");
-  const [currentScreen, setCurrentScreen] = useState("trending");
+	const [moviesIds, setMoviesIds] = useState([]);
+	const [movies, setMovies] = useState([]);
+	const [searchValue, setSearch] = useState("");
+	const [sorted, setSorted] = useState(false);
 
-  useEffect(() => {
-    axios.get(trendingMovies).then((res) => {
-      setMovies(res.data.results);
-      console.log(res.data.results);
-    });
-  }, []);
+	useEffect(() => {
+		axios
+			.get(`${REACT_APP_API_URL}/trending/movie/day`, {
+				params: { api_key: REACT_APP_API_KEY },
+			})
+			.then((response) => {
+				setMovies(response.data.results);
+				setMoviesIds(response.data.results.map((movie) => movie.id));
+			});
+	}, []);
 
-  function GetSearch() {
-    if (!search) {
-      console.log(movies);
-      setCurrentScreen("trending");
-    } else {
-      setCurrentScreen("searchResults");
-      axios.get(GetUrl(search)).then((response) => {
-        console.log(response.data);
-        setSearchResults(response.data.results);
-        console.log(searchResults);
-        setSearch("");
-      });
-    }
-  }
+	const getSearchResults = useCallback(
+			debounce((query) => {
+				axios
+					.get(`${REACT_APP_API_URL}/search/movie`, {
+						params: { api_key: REACT_APP_API_KEY, query },
+					})
+					.then((response) => {
+						setMovies(response.data.results);
+						setMoviesIds(
+							response.data.results.map((movie) => movie.id)
+						);
+					});
+			}, 300),
+		[]
+	);
+	const search = (e) => {
+		setSearch(e.target.value);
+		getSearchResults(e.target.value);
+	};
 
-  function keyListen(e) {
-    if (e.key === "Enter") {
-      GetSearch();
-    }
-  }
-  return (
-    <div className="App">
-      <input
-        className="search-input"
-        onKeyPress={(e) => keyListen(e)}
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-        }}
-        placeholder="Search a movie"
-      />
-      <button className="search-btn" onClick={() => GetSearch()}>
-        Search <FaSearch />{" "}
-      </button>
-      <button
-        className="btn-sort"
-        onClick={() => {
-          if (currentScreen === "searchResults") {
-            let sortedMovie = SortResults(searchResults, "asc");
-            console.log(sortedMovie);
-            setCurrentScreen("asc");
-            setTrendingAsc(sortedMovie);
-          } else {
-            let sortedMovie = SortResults(movies, "asc");
-            console.log(sortedMovie);
-            setCurrentScreen("asc");
-            setTrendingAsc(sortedMovie);
-          }
-        }}
-      >
-        <FaSortAmountDownAlt />
-      </button>
-
-      <button
-        className="btn-sort"
-        onClick={() => {
-          if (currentScreen === "searchResults") {
-            let sortedMovie = SortResults(searchResults, "desc");
-            console.log(sortedMovie);
-            setCurrentScreen("desc");
-            setTrendingAsc(sortedMovie);
-          } else {
-            let sortedMovie = SortResults(movies);
-            console.log(sortedMovie);
-            setCurrentScreen("desc");
-            setTrendingAsc(sortedMovie);
-          }
-        }}
-      >
-        <FaSortAmountUpAlt />
-      </button>
-      {currentScreen === "trending" &&
-        movies &&
-        movies.map((movie, index) => {
-          return (
-            <div key={index}>
-              <Movie
-                imageURL={movie.poster_path}
-                title={movie.title}
-                overview={movie.overview}
-                voteAvarage={movie.vote_average}
-              />
-            </div>
-          );
-        })}
-      {currentScreen === "searchResults" &&
-        searchResults &&
-        searchResults.map((searchResult, index) => {
-          return (
-            <div key={index}>
-              <SearchResult
-                imageURL={searchResult.poster_path}
-                title={searchResult.title}
-                overview={searchResult.overview}
-                voteAvarage={searchResult.vote_average}
-              />
-            </div>
-          );
-        })}
-      {currentScreen === "asc" &&
-        trendingAsc &&
-        trendingAsc.map((movies, index) => {
-          return (
-            <div key={index}>
-              <SearchResult
-                imageURL={movies.poster_path}
-                title={movies.title}
-                overview={movies.overview}
-                voteAvarage={movies.vote_average}
-              />
-            </div>
-          );
-        })}
-
-      {currentScreen === "desc" &&
-        trendingAsc &&
-        trendingAsc.map((movies, index) => {
-          return (
-            <div key={index}>
-              <SearchResult
-                imageURL={movies.poster_path}
-                title={movies.title}
-                overview={movies.overview}
-                voteAvarage={movies.vote_average}
-              />
-            </div>
-          );
-        })}
-    </div>
-  );
+	const sort = () => {
+		if (!sorted) {
+			setMovies((movies) =>
+				movies.sort((a, b) => a.vote_average - b.vote_average)
+			);
+		} else {
+			setMovies((movies) =>
+				movies.sort(
+					(a, b) => moviesIds.indexOf(a.id) - moviesIds.indexOf(b.id)
+				)
+			);
+		}
+		setSorted((s) => !s);
+	};
+	return (
+		<div className="App">
+			<input
+				className="search-input"
+				value={searchValue}
+				onChange={search}
+				placeholder="Search a movie"
+			/>
+			<button className="btn-sort" onClick={sort}>
+				<FaSortAmountDownAlt />
+			</button>
+			{movies.map((movie) => (
+				<Movie key={movie.id} movie={movie} />
+			))}
+		</div>
+	);
 }
 
 export default App;
