@@ -1,23 +1,33 @@
-import logo from './logo.svg';
-import './App.css';
-
+import axios from "axios";
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import Movie from "./components/Movie";
+import { trendingMovies } from "./constants";
 function App() {
+  const [movies, setMovies] = useState("");
+
+  useEffect(() => {
+    axios.get(trendingMovies).then((res) => {
+      setMovies(res.data.results);
+      console.log(movies);
+    });
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {movies &&
+        movies.map((movie, index) => {
+          return (
+            <div key={index}>
+              <Movie
+                image={movie.backdrop_path}
+                title={movie.title}
+                overview={movie.overview}
+                voteAvarage={movie.vote_average}
+              />
+            </div>
+          );
+        })}
     </div>
   );
 }
