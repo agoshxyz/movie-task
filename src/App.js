@@ -2,44 +2,75 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { Movie, SearchResult } from "./components/index";
-import { trendingMovies, GetUrl } from "./constants";
+import { trendingMovies, GetUrl, SortResults } from "./constants";
 function App() {
   const [movies, setMovies] = useState("");
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState("");
+  const [trendingAsc, setTrendingAsc] = useState("");
   const [currentScreen, setCurrentScreen] = useState("trending");
 
   useEffect(() => {
     axios.get(trendingMovies).then((res) => {
       setMovies(res.data.results);
-      console.log(movies);
+      console.log(res.data.results);
     });
   }, []);
 
+  function GetSearch() {
+    if (!search) {
+      console.log(movies);
+      setCurrentScreen("trending");
+    } else {
+      setCurrentScreen("searchResults");
+      axios.get(GetUrl(search)).then((response) => {
+        console.log(response.data);
+        setSearchResults(response.data.results);
+        console.log(searchResults);
+        setSearch("");
+      });
+    }
+  }
+
+  function keyListen(e) {
+    if (e.key === "Enter") {
+      GetSearch();
+    }
+  }
   return (
     <div className="App">
       <input
+        onKeyPress={(e) => keyListen(e)}
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => {
+          setSearch(e.target.value);
+        }}
         placeholder="search"
       />
+      <button onClick={() => GetSearch()}>Search</button>
       <button
         onClick={() => {
-          if (!search) {
-            setCurrentScreen("trending");
-          } else {
-            setCurrentScreen("searchResults");
-            axios.get(GetUrl(search)).then((response) => {
-              console.log(response.data);
-              setSearchResults(response.data.results);
-              console.log(searchResults);
-            });
-          }
+          let movie = movies;
+          let sortedMovie = SortResults(movie, "asc");
+          console.log(sortedMovie);
+          setCurrentScreen("asc");
+          setTrendingAsc(sortedMovie);
         }}
       >
-        Search
+        Asc
       </button>
 
+      <button
+        onClick={() => {
+          let movie = movies;
+          let sortedMovie = SortResults(movie);
+          console.log(sortedMovie);
+          setCurrentScreen("desc");
+          setTrendingAsc(sortedMovie);
+        }}
+      >
+        Desc
+      </button>
       {currentScreen === "trending" &&
         movies &&
         movies.map((movie, index) => {
@@ -64,6 +95,35 @@ function App() {
                 title={searchResult.title}
                 overview={searchResult.overview}
                 voteAvarage={searchResult.vote_average}
+              />
+            </div>
+          );
+        })}
+      {currentScreen === "asc" &&
+        trendingAsc &&
+        trendingAsc.map((movies, index) => {
+          return (
+            <div key={index}>
+              <SearchResult
+                imageURL={movies.poster_path}
+                title={movies.title}
+                overview={movies.overview}
+                voteAvarage={movies.vote_average}
+              />
+            </div>
+          );
+        })}
+
+      {currentScreen === "desc" &&
+        trendingAsc &&
+        trendingAsc.map((movies, index) => {
+          return (
+            <div key={index}>
+              <SearchResult
+                imageURL={movies.poster_path}
+                title={movies.title}
+                overview={movies.overview}
+                voteAvarage={movies.vote_average}
               />
             </div>
           );
