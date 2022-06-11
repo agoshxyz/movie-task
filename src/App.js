@@ -3,6 +3,11 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { Movie, SearchResult } from "./components/index";
 import { trendingMovies, GetUrl, SortResults } from "./constants";
+import {
+  FaSortAmountDownAlt,
+  FaSortAmountUpAlt,
+  FaSearch,
+} from "react-icons/fa";
 function App() {
   const [movies, setMovies] = useState("");
   const [search, setSearch] = useState("");
@@ -40,36 +45,53 @@ function App() {
   return (
     <div className="App">
       <input
+        className="search-input"
         onKeyPress={(e) => keyListen(e)}
         value={search}
         onChange={(e) => {
           setSearch(e.target.value);
         }}
-        placeholder="search"
+        placeholder="Search a movie"
       />
-      <button onClick={() => GetSearch()}>Search</button>
+      <button className="search-btn" onClick={() => GetSearch()}>
+        Search <FaSearch />{" "}
+      </button>
       <button
+        className="btn-sort"
         onClick={() => {
-          let movie = movies;
-          let sortedMovie = SortResults(movie, "asc");
-          console.log(sortedMovie);
-          setCurrentScreen("asc");
-          setTrendingAsc(sortedMovie);
+          if (currentScreen === "searchResults") {
+            let sortedMovie = SortResults(searchResults, "asc");
+            console.log(sortedMovie);
+            setCurrentScreen("asc");
+            setTrendingAsc(sortedMovie);
+          } else {
+            let sortedMovie = SortResults(movies, "asc");
+            console.log(sortedMovie);
+            setCurrentScreen("asc");
+            setTrendingAsc(sortedMovie);
+          }
         }}
       >
-        Asc
+        <FaSortAmountDownAlt />
       </button>
 
       <button
+        className="btn-sort"
         onClick={() => {
-          let movie = movies;
-          let sortedMovie = SortResults(movie);
-          console.log(sortedMovie);
-          setCurrentScreen("desc");
-          setTrendingAsc(sortedMovie);
+          if (currentScreen === "searchResults") {
+            let sortedMovie = SortResults(searchResults, "desc");
+            console.log(sortedMovie);
+            setCurrentScreen("desc");
+            setTrendingAsc(sortedMovie);
+          } else {
+            let sortedMovie = SortResults(movies);
+            console.log(sortedMovie);
+            setCurrentScreen("desc");
+            setTrendingAsc(sortedMovie);
+          }
         }}
       >
-        Desc
+        <FaSortAmountUpAlt />
       </button>
       {currentScreen === "trending" &&
         movies &&

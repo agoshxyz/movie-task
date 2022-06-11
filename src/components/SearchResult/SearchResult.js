@@ -1,10 +1,15 @@
 import React from "react";
-
-const SearchResults = ({  imageURL, title, overview, voteAvarage  }) => {
+import "./SearchResult.css"
+const SearchResult = ({ imageURL, title, overview, voteAvarage }) => {
   return (
-    <div className="container">
+ <div className="container">
       <div className="card">
-        <img src={`https://image.tmdb.org/t/p/w500${imageURL}`} alt="results" width={90} height={120} />
+        <img
+          src={`https://image.tmdb.org/t/p/w500${imageURL}`}
+          alt="results"
+          width={90}
+          height={120}
+        />
         <div className="text">
           {" "}
           <div className="">{title}</div>
@@ -16,4 +21,4 @@ const SearchResults = ({  imageURL, title, overview, voteAvarage  }) => {
   );
 };
 
-export default SearchResults;
+export default SearchResult;

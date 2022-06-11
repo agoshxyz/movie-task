@@ -36,3 +36,30 @@
     transform: rotate(360deg);
   }
 }
+
+.search-input {
+  padding: 10px;
+  font-size: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  margin-right: 10px;
+  border: 1px solid #eee;
+}
+
+.search-btn{
+  padding: 10px;
+  font-size: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  margin-right: 10px;
+  border: 1px solid #eee;
+}
+
+.btn-sort{
+  padding: 10px;
+  font-size: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  margin-right: 10px;
+  border: 1px solid #eee;
+}
