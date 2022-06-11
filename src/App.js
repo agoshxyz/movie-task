@@ -2,9 +2,10 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import Movie from "./components/Movie";
-import { trendingMovies } from "./constants";
+import { trendingMovies, GetUrl } from "./constants";
 function App() {
   const [movies, setMovies] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     axios.get(trendingMovies).then((res) => {
@@ -15,6 +16,21 @@ function App() {
 
   return (
     <div className="App">
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="search"
+      />
+      <div
+        onClick={() => {
+          axios.get(GetUrl(search)).then((response) => {
+            console.log(response.data);
+          });
+        }}
+      >
+        hello
+      </div>
+
       {movies &&
         movies.map((movie, index) => {
           return (
